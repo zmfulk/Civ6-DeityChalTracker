@@ -11,7 +11,8 @@ DATA_FILE = "data.json"
 CONDITIONS = ["Domination", "Science", "Culture", "Religious", "Diplomacy"]
 STATUSES = ["Pending", "Active", "Conquered!"]
 
-LEADERS = sorted([
+# Replaced "Civ / Leader" with a blank string for a cleaner default option
+LEADERS = [""] + sorted([
     "Teddy Roosevelt (Rough Rider)", "Teddy Roosevelt (Bull Moose)", "Abraham Lincoln",
     "Saladin (Vizier)", "Cleopatra (Egyptian)", "Cleopatra (Ptolemaic)", "Saladin (Sultan)", "John Curtin", "Montezuma", "Hammurabi",
     "Pedro II", "Basil II", "Theodora", "Wilfrid Laurier", "Qin Shi Huang (Unifier)",
@@ -84,7 +85,7 @@ def save_data(notify=True):
         
         out_data[cond] = {
             "status": status_val,
-            "civ": "" if civ_val == "Civ / Leader" else civ_val,
+            "civ": civ_val,
             "timer": get_formatted_time(cond, show_seconds=False),
             "turns": turn_val,
             "elapsed_seconds": get_raw_seconds(cond)
@@ -195,11 +196,11 @@ timer_labels = {}
 toggle_btns = {}
 
 settings_var = tk.StringVar(value="Deity | Pangea | Standard Speed | Monopolies Mode")
-audio_file_var = tk.StringVar(value="")
+audio_file_var = tk.StringVar(value="victory.wav")
 
 for cond in CONDITIONS:
     status_vars[cond] = tk.StringVar(value="Pending")
-    civ_vars[cond] = tk.StringVar(value="Civ / Leader")
+    civ_vars[cond] = tk.StringVar(value="") # Initialize as purely blank
     turn_vars[cond] = tk.StringVar(value="")
 
 if os.path.exists(DATA_FILE):
@@ -215,8 +216,10 @@ if os.path.exists(DATA_FILE):
                     loaded_status = d.get("status", "Pending")
                     status_vars[cond].set(loaded_status)
                     previous_statuses[cond] = loaded_status 
+                    
                     civ_val = d.get("civ", "")
-                    civ_vars[cond].set("Civ / Leader" if civ_val == "" else civ_val)
+                    civ_vars[cond].set(civ_val) # Loads raw value directly
+                    
                     turn_vars[cond].set(d.get("turns", ""))
                     timer_state[cond]["elapsed"] = d.get("elapsed_seconds", 0.0)
                     timer_state[cond]["running"] = False
