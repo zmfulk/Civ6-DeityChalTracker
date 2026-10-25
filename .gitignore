@@ -1,0 +1,18 @@
+# Tracker Save Data
+data.json
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+
+# PyInstaller Build Files
+build/
+dist/
+*.spec
+
+# OS Generated Files
+.DS_Store
+Thumbs.db

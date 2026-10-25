@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civ 6 Challenge Overlay</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; 
+            height: 100vh;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch; 
+            background: rgba(0, 12, 54, 1.00); 
+            border: 2px solid #c9a565; 
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            margin-bottom: -10px; 
+            overflow: hidden; 
+        }
+
+        .settings-bar {
+            position: relative; 
+            background: #c9a565; 
+            border-bottom: 2px solid #000000; 
+            height: 24px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000000; 
+            font-weight: 900; 
+            font-size: 12px; 
+            font-style: italic;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .master-timer {  
+            position: absolute;
+            padding-bottom: 2px;
+            right: 5px;
+            font-family: 'Arial Black', Impact, sans-serif;
+            font-size: 12px; 
+            font-weight: 600;
+            font-style: normal; 
+            color: #000000;
+        }
+
+        .tracker-container {
+            display: flex;
+            gap: 6px; 
+            padding: 8px 12px 12px 12px; 
+        }
+
+        .victory-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            width: 130px; 
+            height: 105px; 
+            padding: 10px 6px 6px 6px; 
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #4a5a75;
+            border-radius: 1px;
+            transition: all 0.4s ease;
+            color: #e0d8c0;
+            text-align: center;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* The 3D Conquered Animation */
+        @keyframes conquerFlip {
+            0% { 
+                transform: perspective(600px) rotateY(-90deg) scale(1); 
+                box-shadow: 0 0 0 rgba(255, 213, 79, 0); 
+                border-color: #4a5a75; 
+            }
+            40% { 
+                transform: perspective(600px) rotateY(0deg) scale(1.15); 
+                box-shadow: 0 0 30px #ffffff, inset 0 0 20px rgba(255, 213, 79, 0.8); 
+                border-color: #ffffff; 
+                background: rgba(255, 213, 79, 0.3); 
+            }
+            100% { 
+                transform: perspective(600px) rotateY(0deg) scale(1); 
+                box-shadow: 0 0 20px rgba(255, 213, 79, 0.6); 
+                border-color: #ffd54f; 
+            }
+        }
+
+        .animate-conquer {
+            animation: conquerFlip 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* The Active Pulse Animation */
+        @keyframes activePulse {
+            0% { 
+                box-shadow: 0 0 10px rgba(100, 181, 246, 0.4); 
+                border-color: #64b5f6;
+            }
+            50% { 
+                box-shadow: 0 0 25px rgba(100, 181, 246, 0.9), inset 0 0 10px rgba(100, 181, 246, 0.3); 
+                border-color: #90caf9;
+            }
+            100% { 
+                box-shadow: 0 0 10px rgba(100, 181, 246, 0.4); 
+                border-color: #64b5f6;
+            }
+        }
+
+        .top-left-container {
+            position: absolute;
+            top: 5px; 
+            left: 5px;
+            display: flex;
+            align-items: center;
+            gap: 3px; 
+        }
+
+        .checkmark {
+            color: #ffd54f; 
+            font-size: 11px; 
+            text-shadow: 0 0 6px #ffd54f;
+        }
+
+        .turn-count {
+            color: #ffd54f;
+            font-size: 11px; 
+            font-family: monospace;
+            letter-spacing: 0.5px;
+            margin-top: 2px; 
+        }
+
+        .card-timer {
+            position: absolute;
+            top: 5px; 
+            right: 5px;
+            font-size: 11px; 
+            font-family: monospace; 
+            color: #8c97a8;
+            letter-spacing: 0.5px;
+        }
+
+        .victory-icon {
+            width: 24px; 
+            height: 24px; 
+            margin-bottom: 2px; 
+            object-fit: contain;
+            transition: all 0.4s ease;
+        }
+
+        .card-title {
+            font-size: 12px; 
+            font-weight: 600;
+            margin-bottom: 2px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-civ-container {
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: flex-start;
+            gap: 2px; 
+            width: 100%;
+        }
+
+        .card-civ {
+            font-size: 11px; 
+            color: #ffffff;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            width: 100%; 
+        }
+
+        .leader-icon {
+            width: 24px; 
+            height: 24px; 
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Status Colors & Image Filters */
+        .status-Pending { 
+            opacity: 0.4; 
+        }
+        .status-Pending .victory-icon {
+            filter: grayscale(100%) brightness(0.7);
+        }
+        
+        .status-Active { 
+            opacity: 1; 
+            animation: activePulse 2.5s infinite; 
+        }
+        .status-Active .victory-icon {
+            filter: drop-shadow(0 0 5px rgba(100, 181, 246, 0.8));
+        }
+        .status-Active .card-timer {
+            color: #64b5f6; 
+            text-shadow: 0 0 5px rgba(100, 181, 246, 0.5);
+        }
+        
+        .status-Conquered { 
+            border-color: #ffd54f;
+            box-shadow: 0 0 20px rgba(255, 213, 79, 0.6);
+            color: #ffd54f;
+            opacity: 1; 
+            transform: scale(1); 
+        }
+        .status-Conquered .victory-icon {
+            filter: drop-shadow(0 0 8px #ffd54f);
+        }
+        .status-Conquered .card-timer {
+            color: #ffd54f; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="settings-bar" id="settings-bar-container">
+            <div id="settings-text"></div>
+            <div class="master-timer" id="master-timer">00:00</div>
+        </div>
+        
+        <div class="tracker-container" id="tracker">
+            <!-- Cards injected here -->
+        </div>
+    </div>
+
+    <script>
+        const baseConditions = ["Domination", "Science", "Culture", "Religious", "Diplomacy"];
+        let lastDataString = ""; 
+        let isFirstLoad = true; 
+        let conqueredMemory = {}; 
+
+        function renderCards(data, conditionsOrder) {
+            let html = '';
+            
+            document.getElementById('settings-text').innerText = data.match_settings || ""; 
+            if (data.master_timer) {
+                document.getElementById('master-timer').innerText = data.master_timer;
+            }
+            
+            conditionsOrder.forEach(cond => {
+                if (!data[cond]) return;
+
+                const cssStatus = data[cond].status.replace(/[^a-zA-Z0-9]/g, ''); 
+                const rawCivVal = data[cond].civ;
+                const turnsVal = data[cond].turns || "";
+                const timerText = data[cond].timer || "00:00";
+                
+                let animationClass = '';
+                if (cssStatus === 'Conquered') {
+                    if (!conqueredMemory[cond] && !isFirstLoad) {
+                        animationClass = 'animate-conquer';
+                    }
+                    conqueredMemory[cond] = true;
+                } else {
+                    conqueredMemory[cond] = false; 
+                }
+                
+                const victoryIconFile = cond.toLowerCase() + '.png';
+                let civText = '---';
+                let leaderIconHtml = '';
+
+                if (rawCivVal !== 'Civ / Leader' && rawCivVal.trim() !== '') {
+                    civText = rawCivVal;
+                    const leaderFileName = rawCivVal.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') + '.png';
+                    leaderIconHtml = `<img src="leadericons/${leaderFileName}" class="leader-icon" onerror="this.style.display='none'">`;
+                }
+
+                const showCheckmark = cssStatus === 'Conquered' ? 'block' : 'none';
+                const showTurns = (cssStatus === 'Conquered' && turnsVal.trim() !== '') ? 'block' : 'none';
+                
+                html += `
+                    <div class="victory-card status-${cssStatus} ${animationClass}">
+                        
+                        <div class="top-left-container">
+                            <div class="checkmark" style="display: ${showCheckmark};">&#10004;</div>
+                            <div class="turn-count" style="display: ${showTurns};">${turnsVal}</div>
+                        </div>
+                        
+                        <div class="card-timer">${timerText}</div>
+                        
+                        <img src="${victoryIconFile}" class="victory-icon" alt="${cond}">
+                        <div class="card-title">${cond}</div>
+                        <div class="card-civ-container">
+                            <div class="card-civ">${civText}</div>
+                            ${leaderIconHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('tracker').innerHTML = html;
+        }
+        
+        async function fetchUpdate() {
+            try {
+                const response = await fetch('data.json?t=' + new Date().getTime());
+                const data = await response.json();
+                
+                const currentDataString = JSON.stringify(data);
+                if (currentDataString !== lastDataString) {
+                    lastDataString = currentDataString;
+                    const orderedConditions = data._order || baseConditions;
+                    
+                    renderCards(data, orderedConditions);
+                    isFirstLoad = false; 
+                }
+            } catch (error) {
+                console.error("Waiting for data.json...");
+            }
+        }
+
+        setInterval(fetchUpdate, 1000);
+        fetchUpdate();
+    </script>
+</body>
+</html>
